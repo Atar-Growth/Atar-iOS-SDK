@@ -57,8 +57,6 @@ class ConfigNetworkRequest {
                 let endTime = Date()
                 let duration = endTime.timeIntervalSince(startTime)*1000
                 
-                var metadata: [String: Any] = ["url": url.absoluteString]
-                
                 Logger.shared.log("Config request succeeded in \(duration) seconds")
                 
                 switch result {
@@ -66,14 +64,9 @@ class ConfigNetworkRequest {
                     Logger.shared.log("JSON response: \(json)")
                     self?.updateConfig(with: json)
                     self?.configManager.lastFetchDate = Date()
-                    metadata["result"] = "success"
                 case .failure(let error):
                     Logger.shared.log("GET request failed with error: \(error)")
-                    metadata["result"] = "failure"
-                    metadata["error"] = error.localizedDescription
                 }
-                
-                StatsRecorder.shared.add(event: "config-request", value: Int(duration), metadata: metadata)
                 
                 self?.inProgess = false
             }
@@ -88,7 +81,7 @@ class ConfigNetworkRequest {
         
         let currentTime = Date()
         let fetchInterval = TimeInterval(configManager.notifBlackoutWindow)
-        let fetchTime = lastFetchDate.addingTimeInterval(5*60)
+        let fetchTime = lastFetchDate.addingTimeInterval(fetchInterval)
         
         return currentTime > fetchTime
     }

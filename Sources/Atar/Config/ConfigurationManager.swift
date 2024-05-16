@@ -24,7 +24,6 @@ class ConfigurationManager {
     static public let LIB_VERSION = "1.0.0"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
-    static public let OFFER_PATH = "/offer"
     static public let OFFERS_PATH = "/offers"
     static public let MESSAGE_PATH = "/message"
     
@@ -109,7 +108,7 @@ class ConfigurationManager {
     
     var lastOfferRequest: OfferRequest? {
         get {
-            var lastRequest = OfferRequest()
+            let lastRequest = OfferRequest()
             lastRequest.fromDictionary(dictionary: defaults.object(forKey: "atarLastOfferRequest") as? [String: Any] ?? [:])
             return lastRequest
         }

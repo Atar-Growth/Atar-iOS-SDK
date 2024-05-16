@@ -28,21 +28,15 @@ class NotificationManager {
             Logger.shared.log("Frequency cap reached, not sending notification")
             return
         }
-        
-        let startTime = Date()
-        
+                
         request.referenceId = request.referenceId ?? UUID().uuidString
         
         requests[request.referenceId!] = request
         
         OfferFetcher.fetchOffer(with: request.toDictionary()) { offer, error in
-            let endTime = Date()
-            let duration = endTime.timeIntervalSince(startTime)*1000
-            var offerEventMetadata: [String: Any] = [:]
-            
             if let offer = offer {
-                var title = "\(titlePrefix) \(offer.title)"
-                var body = offer.description
+                let title = "\(titlePrefix) \(offer.title)"
+                let body = offer.description
                 
                 var userInfo = [
                     "offerId": offer.id,
@@ -65,11 +59,6 @@ class NotificationManager {
                         request.onScheduled!(true, nil)
                     }
                 }
-                
-                offerEventMetadata["offerId"] = offer.id
-                offerEventMetadata["result"] = "success"
-            } else {
-                offerEventMetadata["result"] = "no offer"
             }
             
             if let error = error {
@@ -78,12 +67,7 @@ class NotificationManager {
                         request.onScheduled!(false, error)
                     }
                 }
-                
-                offerEventMetadata["result"] = "failure"
-                offerEventMetadata["error"] = error.localizedDescription
             }
-            
-            StatsRecorder.shared.add(event: "offer-request-notif", value: Int(duration),  metadata: offerEventMetadata)
         }
     }
     
@@ -108,17 +92,12 @@ class NotificationManager {
             requestParams = lastOfferRequest!.toDictionary()
         }
         requestParams["event"] = "session_end"
-        
-        let startTime = Date()
-        
+                
         OfferFetcher.fetchOffer(with: requestParams) { offer, error in
-            let endTime = Date()
-            let duration = endTime.timeIntervalSince(startTime)*1000
-            var offerEventMetadata: [String: Any] = [:]
             
             if let offer = offer {
-                var title = "\(ConfigurationManager.shared.postSessionNotifPrefix) \(offer.title)"
-                var body = offer.description
+                let title = "\(ConfigurationManager.shared.postSessionNotifPrefix) \(offer.title)"
+                let body = offer.description
                 
                 var userInfo = [
                     "offerId": offer.id,
@@ -135,19 +114,7 @@ class NotificationManager {
                 }
                 
                 self.genericTriggerNotif(id: offer.id, title: title, body: body, iconUrl: offer.iconUrl, userInfo: userInfo, delay: TimeInterval(delay))
-                
-                offerEventMetadata["offerId"] = offer.id
-                offerEventMetadata["result"] = "success"
-            } else {
-                offerEventMetadata["result"] = "no offer"
             }
-            
-            if let error = error {
-                offerEventMetadata["result"] = "failure"
-                offerEventMetadata["error"] = error.localizedDescription
-            }
-            
-            StatsRecorder.shared.add(event: "offer-request-postsession-notif", value: Int(duration), metadata: offerEventMetadata)
             
             completion(error == nil)
         }

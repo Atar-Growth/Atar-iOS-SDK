@@ -23,7 +23,6 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
             // Handle the tap and routing
             Logger.shared.log("User clicked notification")
             
-            let startTime = Date()
             
             let userInfo = response.notification.request.content.userInfo
             
@@ -33,7 +32,6 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
                 }
             }
             
-            let offerId = userInfo["offerId"] as? String
             let clickUrl = userInfo["clickUrl"] as? String
             let destinationUrl = userInfo["destinationUrl"] as? String
             
@@ -47,17 +45,6 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
                     UIApplication.shared.open(URL(string: destinationUrl!)!, options: [:], completionHandler: nil)
                 }
             }
-            
-            let endTime = Date()
-            let duration = endTime.timeIntervalSince(startTime)*1000
-            var clickEventMetadata: [String: Any] = [
-                "notifId": response.notification.request.identifier,
-                "offerId": offerId ?? "",
-                "clickUrl": clickUrl ?? "",
-                "destinationUrl": destinationUrl ?? ""
-            ]
-                
-            StatsRecorder.shared.add(event: "click-notif", value: Int(duration), metadata: clickEventMetadata)
         }
         
         originalDelegate?.userNotificationCenter?(center, didReceive: response, withCompletionHandler: completionHandler) ?? completionHandler()
@@ -79,40 +66,11 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
                 }
             }
             
-            let startTime = Date()
-            
             // fire impression URL if exists
             let impressionUrl = userInfo["impressionUrl"] as? String
             if let impressionUrl = impressionUrl {
-                NetworkManager.shared.getRequest(url: URL(string: impressionUrl)!)  { [] result in
-                    let endTime = Date()
-                    let duration = endTime.timeIntervalSince(startTime)*1000
-                    
-                    var impressionEventMetadata: [String: Any] = [
-                        "notifId": notification.request.identifier,
-                        "offerId": userInfo["offerId"] as? String ?? "",
-                        "url": impressionUrl]
-                                                   
-                    switch result {
-                    case .success(let json):
-                        impressionEventMetadata["result"] = "success"
-                    case .failure(let error):
-                        impressionEventMetadata["result"] = "failure"
-                        impressionEventMetadata["error"] = error.localizedDescription
-                    }
-                    
-                    StatsRecorder.shared.add(event: "view-notif", value: Int(duration), metadata: impressionEventMetadata)
-                }
-            } else {
-                let endTime = Date()
-                let duration = endTime.timeIntervalSince(startTime)*1000
-                var impressionEventMetadata: [String: Any] = [
-                    "notifId": notification.request.identifier,
-                    "offerId": userInfo["offerId"] as? String ?? "",
-                ]
-                
-                // TODO fill out more details
-                StatsRecorder.shared.add(event: "view-notif", value: Int(duration), metadata: impressionEventMetadata)
+                Logger.shared.log("Impression URL: \(impressionUrl)")
+                NetworkManager.shared.getRequest(url: URL(string: impressionUrl)!) { _ in }
             }
         }
         

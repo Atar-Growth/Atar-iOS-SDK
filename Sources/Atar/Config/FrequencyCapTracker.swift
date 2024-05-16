@@ -20,7 +20,7 @@ class FrequencyCapTracker {
         let today = startOfDay(for: Date())
         
         var count = 0
-        if let lastSentDate = ConfigurationManager.shared.lastNotificationDate as? Date, startOfDay(for: lastSentDate) == today {
+        if let lastSentDate = ConfigurationManager.shared.lastNotificationDate, startOfDay(for: lastSentDate) == today {
             count = defaults.integer(forKey: sentNotificationsKey)
         }
         
@@ -32,7 +32,7 @@ class FrequencyCapTracker {
         let today = startOfDay(for: Date())
         
         var count = 0
-        if let lastSentDate = ConfigurationManager.shared.lastInterstitialDate as? Date, startOfDay(for: lastSentDate) == today {
+        if let lastSentDate = ConfigurationManager.shared.lastInterstitialDate, startOfDay(for: lastSentDate) == today {
             count = defaults.integer(forKey: showedInterstitialKey)
         }
         
@@ -43,7 +43,7 @@ class FrequencyCapTracker {
     func canSendNotification() -> Bool {
         let today = startOfDay(for: Date())
         
-        if let lastSentDate = ConfigurationManager.shared.lastNotificationDate as? Date, startOfDay(for: lastSentDate) == today {
+        if let lastSentDate = ConfigurationManager.shared.lastNotificationDate, startOfDay(for: lastSentDate) == today {
             let count = defaults.integer(forKey: sentNotificationsKey)
             return count < ConfigurationManager.shared.notifFrequencyCap
         }
@@ -55,7 +55,7 @@ class FrequencyCapTracker {
     func canShowInterstitial() -> Bool {
         let today = startOfDay(for: Date())
         
-        if let lastSentDate = ConfigurationManager.shared.lastInterstitialDate as? Date, startOfDay(for: lastSentDate) == today {
+        if let lastSentDate = ConfigurationManager.shared.lastInterstitialDate, startOfDay(for: lastSentDate) == today {
             let count = defaults.integer(forKey: showedInterstitialKey)
             return count < ConfigurationManager.shared.notifFrequencyCap
         }

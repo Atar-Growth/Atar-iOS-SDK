@@ -23,7 +23,7 @@ class OfferFetcher {
         
     static func fetchOffer(with parameters: [String: Any], completion: @escaping (Offer?, Error?) -> Void) {
         let baseUrl = ConfigurationManager.shared.apiUrl
-        let urlString = "\(baseUrl)\(ConfigurationManager.OFFER_PATH)"
+        let urlString = "\(baseUrl)\(ConfigurationManager.OFFERS_PATH)"
         
         guard let url = URL(string: urlString) else {
             completion(nil, NSError(domain: "URLError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
@@ -40,7 +40,8 @@ class OfferFetcher {
             "aId": ConfigurationManager.shared.anonId ?? "none",
             "os": "ios",
             "platform": deviceModel,
-            "request": parameters
+            "request": parameters,
+            "count": 1
         ]
         
         if let adId = ConfigurationManager.shared.adId {

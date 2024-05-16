@@ -13,7 +13,6 @@ public class Atar: NSObject {
     @objc static var shared: Atar? = nil
     
     private var delegateInterceptor: NotificationDelegateLayer?
-    private var syncNetworkManager: SyncNetworkManager?
     private var sessionEndMonitor: SessionEndMonitor?
     private var interstitialView: InterstitialView?
     private var messageView: MessageView?
@@ -46,7 +45,6 @@ public class Atar: NSObject {
         ConfigNetworkRequest.shared.sync()
         
         // Initialize the lifecyle monintors
-        syncNetworkManager = SyncNetworkManager.shared
         sessionEndMonitor = SessionEndMonitor.shared
         
         self.interstitialView = InterstitialView()
@@ -71,6 +69,10 @@ public class Atar: NSObject {
         if internalTitlePrefix.isEmpty {
             internalTitlePrefix = ConfigurationManager.shared.triggeredNotifPrefix
         }
+        DispatchQueue.global(qos: .background).async {
+            NotificationManager.triggerImmediateNotif(request: request, titlePrefix: internalTitlePrefix)
+        }
+        
         NotificationManager.checkNotificationAuthorization { enabled in
             if enabled {
                 DispatchQueue.global(qos: .background).async {

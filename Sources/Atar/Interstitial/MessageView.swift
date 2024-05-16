@@ -75,9 +75,6 @@ class MessageView: UIView, WKNavigationDelegate {
         Logger.shared.log("Atar message view tapped")
         tapAction?()
         hide()
-        
-        var clickEventMetadata: [String: Any] = [:]
-        StatsRecorder.shared.add(event: "click-message", value: 0, metadata: clickEventMetadata)
     }
     
     private func configureAppearance() {

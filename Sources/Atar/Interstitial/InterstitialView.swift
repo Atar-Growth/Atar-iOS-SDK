@@ -72,7 +72,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     
     private func setupConstraints() {
         var interstitialAdHeight = ConfigurationManager.shared.interstitialAdHeight
-        if interstitialAdHeight == 0 || interstitialAdHeight == nil {
+        if interstitialAdHeight == 0.0 {
             interstitialAdHeight = 0.7
         }
         NSLayoutConstraint.activate([
@@ -81,7 +81,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             contentView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
             contentView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: interstitialAdHeight),
             
-            webView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -40),
+            webView.topAnchor.constraint(equalTo: contentView.topAnchor),
             webView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
             webView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
             webView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -131,16 +131,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                 do {
                     let clickObj = try JSONSerialization.jsonObject(with: jsonData) as? [String: String]
                     if let clickObj = clickObj {
-                        
-                        var clickEventMetadata: [String: Any] = [
-                            "offerId": clickObj["offerId"] ?? "",
-                            "clickUrl": clickObj["clickUrl"] ?? ""
-                        ]
-                        
-                        StatsRecorder.shared.add(event: "click-inter", value: 0, metadata: clickEventMetadata)
-                        
-                        
-                        UIApplication.shared.open(URL(string: clickObj["clickUrl"] as! String)!, options: [:], completionHandler: nil)
+                        UIApplication.shared.open(URL(string: clickObj["clickUrl"]!)!, options: [:], completionHandler: nil)
                     }
                 } catch {
                     Logger.shared.log("Error parsing JSON from message body: \(error)")
