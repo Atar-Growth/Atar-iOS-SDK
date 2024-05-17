@@ -80,7 +80,7 @@ class ConfigNetworkRequest {
         }
         
         let currentTime = Date()
-        let fetchInterval = TimeInterval(configManager.notifBlackoutWindow)
+        let fetchInterval = TimeInterval(24 * 60 * 60) // 24 * 60 * 60
         let fetchTime = lastFetchDate.addingTimeInterval(fetchInterval)
         
         return currentTime > fetchTime
