@@ -53,23 +53,29 @@ class OfferFetcher {
         NetworkManager.shared.postRequest(url: url, body: postDictionary) { result in
             switch result {
             case .success(let response):
-                Logger.shared.log("Offer result: \(response)")
+//                Logger.shared.log("Offer result: \(response)")
                 
                 guard let dict = response as? [String: Any] else {
                     Logger.shared.log("Invalid data format")
                     completion(nil, NSError(domain: "DataError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"]))
                     return
                 }
-                Logger.shared.log("Offer dict: \(dict)")
                 
-                if let successString = dict["success"] as? String, successString == "false" {
+                if let successBool = dict["success"] as? Bool, successBool == false {
                     let errorMessage = dict["message"] as? String ?? "Unknown error"
                     Logger.shared.log("Error fetching offer: \(errorMessage)")
                     completion(nil, nil)
                 } else {
-                    if dict["offer"] != nil {
-                        let offer = Offer(from: dict["offer"] as? [String: Any] ?? [:])
-                        completion(offer, nil)
+                    Logger.shared.log("passed success check")
+                    if dict["offers"] != nil {
+                        let offers = dict["offers"] as? [[String: String]] ?? []
+                        if offers.count > 0 {
+                            Logger.shared.log("Fetched offer: \(offers[0])")
+                            let offer = Offer(from: offers[0])
+                            completion(offer, nil)
+                        } else {
+                            completion(nil, nil)
+                        }
                     } else {
                         completion(nil, nil)
                     }
@@ -138,27 +144,27 @@ struct Offer {
     let title: String
     let description: String
     let iconUrl: String?
-    let type: String
     let clickUrl: String
-    let destinationUrl: String
+    let destinationUrl: String?
     let impressionUrl: String?
     
     init?(from dictionary: [String: Any]) {
         guard let id = dictionary["id"] as? String,
               let title = dictionary["title"] as? String,
               let description = dictionary["description"] as? String,
-              let type = dictionary["type"] as? String,
-              let clickUrl = dictionary["clickUrl"] as? String,
-              let destinationUrl = dictionary["destinationUrl"] as? String else {
+              let clickUrl = dictionary["clickUrl"] as? String else {
             return nil
         }
         
         self.id = id
         self.title = title
         self.description = description
-        self.type = type
         self.clickUrl = clickUrl
-        self.destinationUrl = destinationUrl
+        if let destinationUrl = dictionary["destinationUrl"] as? String, destinationUrl != "<null>" {
+            self.destinationUrl = destinationUrl
+        } else {
+            self.destinationUrl =  nil
+        }
         if let iconUrl = dictionary["iconUrl"] as? String, iconUrl != "<null>" {
             self.iconUrl = iconUrl
         } else {

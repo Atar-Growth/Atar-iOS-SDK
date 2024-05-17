@@ -69,10 +69,6 @@ public class Atar: NSObject {
         if internalTitlePrefix.isEmpty {
             internalTitlePrefix = ConfigurationManager.shared.triggeredNotifPrefix
         }
-        DispatchQueue.global(qos: .background).async {
-            NotificationManager.triggerImmediateNotif(request: request, titlePrefix: internalTitlePrefix)
-        }
-        
         NotificationManager.checkNotificationAuthorization { enabled in
             if enabled {
                 DispatchQueue.global(qos: .background).async {
