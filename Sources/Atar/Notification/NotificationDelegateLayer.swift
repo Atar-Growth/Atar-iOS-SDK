@@ -1,6 +1,6 @@
 //
 //  NotificationDelegateLayer.swift
-//  
+//
 //
 //  Created by Alex Austin on 3/31/24.
 //
@@ -36,7 +36,7 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
             let destinationUrl = userInfo["destinationUrl"] as? String
             
             let lastRequest = ConfigurationManager.shared.lastOfferRequest
-            if lastRequest != nil {
+            if lastRequest != nil && ConfigurationManager.shared.notifRouteToPopup {
                 Atar.getInstance().showOfferPopup(request: lastRequest!)
             } else {
                 if clickUrl != nil {
@@ -61,8 +61,10 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
             let userInfo = notification.request.content.userInfo
             
             if let referenceId = userInfo["referenceId"] {
+                Logger.shared.log("Reference ID: \(referenceId)")
                 if let request = NotificationManager.getRequestById(referenceId as! String) {
-                    request.onSent?()
+                    Logger.shared.log("Found request")
+                    request.onNotifSent?()
                 }
             }
             

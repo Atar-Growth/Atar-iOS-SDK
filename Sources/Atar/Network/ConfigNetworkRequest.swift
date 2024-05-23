@@ -101,6 +101,10 @@ class ConfigNetworkRequest {
             configManager.notifFrequencyCap = notifFrequencyCap
         }
         
+        if let notifRouteToPopup = dict["notifRouteToPopup"] as? Bool {
+            configManager.notifRouteToPopup = notifRouteToPopup
+        }
+        
         if let postSessionNotifEnabled = dict["postSessionNotifEnabled"] as? Bool {
             configManager.postSessionNotifEnabled = postSessionNotifEnabled
         }

@@ -21,11 +21,21 @@ class NotificationManager {
     static func triggerImmediateNotif(request: OfferRequest, titlePrefix: String) {
         if isBlackoutWindowActive() {
             Logger.shared.log("Blackout window active, not sending notification")
+            if request.onNotifScheduled != nil {
+                DispatchQueue.main.async {
+                    request.onNotifScheduled!(false, "Not sending because blackout window active")
+                }
+            }
             return
         }
         
         if FrequencyCapTracker.shared.canSendNotification() == false {
             Logger.shared.log("Frequency cap reached, not sending notification")
+            if request.onNotifScheduled != nil {
+                DispatchQueue.main.async {
+                    request.onNotifScheduled!(false, "Frequency cap reached, not sending notification")
+                }
+            }
             return
         }
                 
@@ -40,6 +50,7 @@ class NotificationManager {
                 
                 var userInfo = [
                     "offerId": offer.id,
+                    "referenceId": request.referenceId,
                     "clickUrl": offer.clickUrl,
                     "destinationUrl": offer.destinationUrl
                 ]
@@ -54,17 +65,17 @@ class NotificationManager {
                 
                 self.genericTriggerNotif(id: offer.id, title: title, body: body, iconUrl: offer.iconUrl, userInfo: userInfo)
                 
-                if request.onScheduled != nil {
+                if request.onNotifScheduled != nil {
                     DispatchQueue.main.async {
-                        request.onScheduled!(true, nil)
+                        request.onNotifScheduled!(true, nil)
                     }
                 }
             }
             
             if let error = error {
-                if request.onScheduled != nil {
+                if request.onNotifScheduled != nil {
                     DispatchQueue.main.async {
-                        request.onScheduled!(false, error)
+                        request.onNotifScheduled!(false, error.localizedDescription)
                     }
                 }
             }
@@ -79,6 +90,11 @@ class NotificationManager {
         
         if FrequencyCapTracker.shared.canSendNotification() == false {
             Logger.shared.log("Frequency cap reached, not sending notification")
+            return
+        }
+        
+        if ConfigurationManager.shared.postSessionNotifDisabledClient {
+            Logger.shared.log("Post session notif not enabled, not sending notification")
             return
         }
         

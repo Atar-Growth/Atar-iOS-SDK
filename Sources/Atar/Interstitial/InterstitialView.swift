@@ -13,11 +13,14 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     private let webView: WKWebView
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let closeButton = UIButton()
+    private var lastOfferRequest: OfferRequest?
 
     // Configure with parameters for image URL and text
-    func configure(withUrl url: URL) {
-        let request = URLRequest(url: url)
-        webView.load(request)
+    func configure(withRequest request: OfferRequest) {
+        lastOfferRequest = request
+        let url = OfferFetcher.getOfferWebUrl(with: request)
+        let webRequest = URLRequest(url: url!)
+        webView.load(webRequest)
     }
 
     override init(frame: CGRect) {
@@ -63,7 +66,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         closeButton.setTitle("x", for: .normal)
         closeButton.titleLabel?.font = UIFont.monospacedSystemFont(ofSize: 20, weight: .regular)
         closeButton.setTitleColor(.gray, for: .normal)
-        closeButton.addTarget(self, action: #selector(dismiss), for: .touchUpInside)
+        closeButton.addTarget(self, action: #selector(cancel), for: .touchUpInside)
         addSubview(closeButton)
 
         setupConstraints()
@@ -73,7 +76,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     private func setupConstraints() {
         var interstitialAdHeight = ConfigurationManager.shared.interstitialAdHeight
         if interstitialAdHeight == 0.0 {
-            interstitialAdHeight = 0.7
+            interstitialAdHeight = 0.8
         }
         NSLayoutConstraint.activate([
             contentView.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -106,9 +109,20 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         UIView.animate(withDuration: 0.3) {
             self.alpha = 1
         }
+        
+        if let offerRequest = lastOfferRequest {
+            offerRequest.onPopupShown?(true, nil)
+        }
     }
 
-    @objc func dismiss() {
+    @objc func cancel() {
+        dismiss()
+        if let offerRequest = lastOfferRequest {
+            offerRequest.onPopupCanceled?()
+        }
+    }
+    
+    func dismiss() {
         UIView.animate(withDuration: 0.3) {
             self.alpha = 0
         } completion: { _ in
@@ -135,8 +149,12 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                     }
                 } catch {
                     Logger.shared.log("Error parsing JSON from message body: \(error)")
+                    cancel();
                 }
             }
+        }
+        if let offerRequest = lastOfferRequest {
+            offerRequest.onClicked?()
         }
         dismiss()
     }

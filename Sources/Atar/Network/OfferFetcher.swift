@@ -41,7 +41,8 @@ class OfferFetcher {
             "os": "ios",
             "platform": deviceModel,
             "request": parameters,
-            "count": 1
+            "count": 1,
+            "type": "notif"
         ]
         
         if let adId = ConfigurationManager.shared.adId {

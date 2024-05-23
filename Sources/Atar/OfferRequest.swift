@@ -8,8 +8,12 @@ import Foundation
 
 @objc(OfferRequest)
 public class OfferRequest: NSObject {
-    public var onScheduled: ((Bool, Error?) -> Void)?
-    public var onSent: (() -> Void)?
+    public var onNotifScheduled: ((Bool, String?) -> Void)?
+    public var onNotifSent: (() -> Void)?
+    
+    public var onPopupShown: ((Bool, String?) -> Void)?
+    public var onPopupCanceled: (() -> Void)?
+    
     public var onClicked: (() -> Void)?
 
     public var event: String?
@@ -30,14 +34,6 @@ public class OfferRequest: NSObject {
     public var country: String?
     public var quantity: Int?
     public var paymentType: String?
-    
-    public init(onScheduled: ((Bool, Error?) -> Void)? = nil,
-                onSent: (() -> Void)? = nil,
-                onClicked: (() -> Void)? = nil) {
-        self.onScheduled = onScheduled
-        self.onSent = onSent
-        self.onClicked = onClicked
-    }
     
     func toDictionary() -> [String: Any] {
         var dict = [String: Any]()

@@ -64,6 +64,11 @@ public class Atar: NSObject {
     }
 
     @objc
+    public func setPostSessionNotifDisabled(disabled: Bool) {
+        ConfigurationManager.shared.postSessionNotifDisabledClient = disabled
+    }
+    
+    @objc
     public func triggerOfferNotification(request: OfferRequest, titlePrefix: String = "") {
         var internalTitlePrefix = titlePrefix
         if internalTitlePrefix.isEmpty {
@@ -76,9 +81,9 @@ public class Atar: NSObject {
                 }
             } else {
                 Logger.shared.log("Atar will not show offers. Notifications are not enabled.")
-                if (request.onScheduled != nil) {
+                if (request.onNotifScheduled != nil) {
                     DispatchQueue.main.async {
-                        request.onScheduled!(false, nil)
+                        request.onNotifScheduled!(false, "Notification permissions are not enabled")
                     }
                 }
             }
@@ -90,10 +95,20 @@ public class Atar: NSObject {
     public func showOfferPopup(request: OfferRequest) {
         if !ConfigurationManager.shared.interstitialAdEnabled {
             Logger.shared.log("Atar will not show offers. Interstitial ad is not enabled.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Interstitial ad is not enabled")
+                }
+            }
             return
         }
         if !FrequencyCapTracker.shared.canShowInterstitial() {
             Logger.shared.log("Atar will not show offers. Frequency cap is reached.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Frequency cap is reached")
+                }
+            }
             return
         }
         FrequencyCapTracker.shared.incrementInterstitialCount()
@@ -102,8 +117,7 @@ public class Atar: NSObject {
             interstitialView = InterstitialView()
         }
         
-        let url = OfferFetcher.getOfferWebUrl(with: request)
-        interstitialView!.configure(withUrl: url!)
+        interstitialView!.configure(withRequest: request)
         interstitialView!.show()
     }
     

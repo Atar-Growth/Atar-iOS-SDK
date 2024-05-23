@@ -21,7 +21,7 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.0.0"
+    static public let LIB_VERSION = "1.0.4"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"
@@ -70,9 +70,19 @@ class ConfigurationManager {
         set { defaults.set(newValue, forKey: "atarNotifFrequencyCap")}
     }
     
+    var notifRouteToPopup: Bool {
+        get { return defaults.bool(forKey: "notifRouteToPopup") }
+        set { defaults.set(newValue, forKey: "notifRouteToPopup")}
+    }
+    
     var postSessionNotifEnabled: Bool {
         get { return defaults.bool(forKey: "atarPostSessionNotifEnabled") }
         set { defaults.set(newValue, forKey: "atarPostSessionNotifEnabled")}
+    }
+    
+    var postSessionNotifDisabledClient: Bool {
+        get { return defaults.bool(forKey: "atarPostSessionNotifDisabledClient") }
+        set { defaults.set(newValue, forKey: "atarPostSessionNotifDisabledClient")}
     }
     
     var postSessionNotifDelay: Int {
@@ -81,12 +91,12 @@ class ConfigurationManager {
     }
     
     var postSessionNotifPrefix: String {
-        get { return defaults.string(forKey: "atarPostSessionNotifPrefix") ?? "Reward for you!" }
+        get { return defaults.string(forKey: "atarPostSessionNotifPrefix") ?? "Thanks!" }
         set { defaults.set(newValue, forKey: "atarPostSessionNotifPrefix")}
     }
     
     var triggeredNotifPrefix: String {
-        get { return defaults.string(forKey: "atarTriggeredNotifPrefix") ?? "Gift for you!" }
+        get { return defaults.string(forKey: "atarTriggeredNotifPrefix") ?? "Thanks!" }
         set { defaults.set(newValue, forKey: "atarTriggeredNotifPrefix")}
     }
     
