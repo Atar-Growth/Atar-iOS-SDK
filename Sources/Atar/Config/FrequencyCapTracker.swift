@@ -13,6 +13,7 @@ class FrequencyCapTracker {
     private let defaults = UserDefaults.standard
     private let sentNotificationsKey = "atarSentNotificationsCount"
     private let showedInterstitialKey = "atarShowedInterstitial"
+    private let showedMessageKey = "atarShowedMessage"
     
     private init() {}
     
@@ -40,6 +41,18 @@ class FrequencyCapTracker {
         defaults.set(count, forKey: showedInterstitialKey)
     }
     
+    func incrementMessageCount() {
+        let today = startOfDay(for: Date())
+        
+        var count = 0
+        if let lastSentDate = ConfigurationManager.shared.lastMessageDate, startOfDay(for: lastSentDate) == today {
+            count = defaults.integer(forKey: showedMessageKey)
+        }
+        
+        count += 1
+        defaults.set(count, forKey: showedMessageKey)
+    }
+    
     func canSendNotification() -> Bool {
         let today = startOfDay(for: Date())
         
@@ -58,6 +71,18 @@ class FrequencyCapTracker {
         if let lastSentDate = ConfigurationManager.shared.lastInterstitialDate, startOfDay(for: lastSentDate) == today {
             let count = defaults.integer(forKey: showedInterstitialKey)
             return count < ConfigurationManager.shared.notifFrequencyCap
+        }
+        
+        // No notifications sent today or date mismatch; can send
+        return true
+    }
+    
+    func canShowMessage() -> Bool {
+        let today = startOfDay(for: Date())
+        
+        if let lastSentDate = ConfigurationManager.shared.lastMessageDate, startOfDay(for: lastSentDate) == today {
+            let count = defaults.integer(forKey: showedMessageKey)
+            return count < ConfigurationManager.shared.midSessionMessageFrequencyCap
         }
         
         // No notifications sent today or date mismatch; can send

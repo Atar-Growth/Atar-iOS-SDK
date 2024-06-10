@@ -69,6 +69,11 @@ public class Atar: NSObject {
     }
     
     @objc
+    public func setMidSessionMessageDisabled(disabled: Bool) {
+        ConfigurationManager.shared.midSessionMessageDisabledClient = disabled
+    }
+    
+    @objc
     public func triggerOfferNotification(request: OfferRequest, titlePrefix: String = "") {
         var internalTitlePrefix = titlePrefix
         if internalTitlePrefix.isEmpty {
@@ -123,10 +128,28 @@ public class Atar: NSObject {
     
     @objc
     public func showOfferMessage(request: OfferRequest) {
-        messageView = MessageView(url: OfferFetcher.getMessageWebUrl(with: request)!, tapAction: {
-            Logger.shared.log("Atar show offer message tapped")
-            self.showOfferPopup(request: request)
-        })
+        if !ConfigurationManager.shared.midSessionMessageEnabled || ConfigurationManager.shared.postSessionNotifDisabledClient {
+            Logger.shared.log("Atar will not show offers. Mid session message is not enabled.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Mid session message is not enabled")
+                }
+            }
+            return
+        }
+        
+        if !FrequencyCapTracker.shared.canShowMessage() {
+            Logger.shared.log("Atar will not show offers. Frequency cap is reached.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Frequency cap is reached")
+                }
+            }
+            return
+        }
+        FrequencyCapTracker.shared.incrementMessageCount()
+        messageView = MessageView()
+        messageView!.configureAndShow(withRequest: request)
     }
     
     @objc

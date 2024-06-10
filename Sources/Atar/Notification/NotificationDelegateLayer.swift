@@ -67,13 +67,6 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
                     request.onNotifSent?()
                 }
             }
-            
-            // fire impression URL if exists
-            let impressionUrl = userInfo["impressionUrl"] as? String
-            if let impressionUrl = impressionUrl {
-                Logger.shared.log("Impression URL: \(impressionUrl)")
-                NetworkManager.shared.getRequest(url: URL(string: impressionUrl)!) { _ in }
-            }
         }
         
         originalDelegate?.userNotificationCenter?(center, willPresent: notification, withCompletionHandler: completionHandler) ?? completionHandler([.alert, .sound])

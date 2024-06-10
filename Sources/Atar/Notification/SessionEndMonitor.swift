@@ -10,6 +10,8 @@ import UIKit
 class SessionEndMonitor {
     static let shared = SessionEndMonitor()
     private var startTime: Date?
+    private var didBackground = true
+    private var didFireMessage = false
     private let minimumActiveTime: TimeInterval = 5
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
@@ -25,10 +27,45 @@ class SessionEndMonitor {
     }
 
     @objc private func appDidBecomeActive() {
+        Logger.shared.log( "App became active")
+        if !didBackground {
+            return
+        }
+        self.didBackground = false
+        
         startTime = Date()
+        
+        ConfigurationManager.shared.sessionCount += 1
+        if ConfigurationManager.shared.midSessionMessageSessionInterval == 0 {
+            ConfigurationManager.shared.midSessionMessageSessionInterval = 2
+        }
+        if ConfigurationManager.shared.sessionCount % ConfigurationManager.shared.midSessionMessageSessionInterval == 0 {
+            let messageDelay = ConfigurationManager.shared.midSessionMessageDelay/1000
+            Logger.shared.log("Mid session message eligible, scheduling for " + String(messageDelay) + " seconds")
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(messageDelay)) {
+                if self.didBackground {
+                    self.didBackground = false
+                    return
+                }
+                Logger.shared.log("Mid session message sent")
+                self.didFireMessage = true
+                let offerRequest = OfferRequest()
+                offerRequest.event = "auto_message"
+                Atar.shared?.showOfferMessage(request: offerRequest)
+            }
+        }
     }
     
     @objc private func appDidEnterBackground() {
+        Logger.shared.log( "App entered background")
+        didBackground = true
+        if didFireMessage {
+            didFireMessage = false
+            return
+        }
+        if ConfigurationManager.shared.sessionCount < 2 {
+            return
+        }
         if ConfigurationManager.shared.postSessionNotifEnabled == false {
             return
         }

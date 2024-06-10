@@ -167,6 +167,12 @@ class NotificationManager {
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 Logger.shared.log("Error \(error.localizedDescription)")
+            } else {
+                let impressionUrl = request.content.userInfo["impressionUrl"] as? String
+                if let impressionUrl = impressionUrl {
+                    Logger.shared.log("Impression URL: \(impressionUrl)")
+                    NetworkManager.shared.getRequest(url: URL(string: impressionUrl)!) { _ in }
+                }
             }
         }
     }

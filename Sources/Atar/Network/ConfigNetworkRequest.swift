@@ -80,7 +80,7 @@ class ConfigNetworkRequest {
         }
         
         let currentTime = Date()
-        let fetchInterval = TimeInterval(24 * 60 * 60) // 24 * 60 * 60
+        let fetchInterval = TimeInterval(6 * 60 * 60) // 24 * 60 * 60
         let fetchTime = lastFetchDate.addingTimeInterval(fetchInterval)
         
         return currentTime > fetchTime
@@ -131,6 +131,34 @@ class ConfigNetworkRequest {
         
         if let interstitialFrequencyCap = dict["interstitialFrequencyCap"] as? Int {
             configManager.interstitialFrequencyCap = interstitialFrequencyCap
+        }
+        
+        if let midSessionMessageEnabled = dict["midSessionMessageEnabled"] as? Bool {
+            configManager.midSessionMessageEnabled = midSessionMessageEnabled
+        }
+        
+        if let midSessionMessageSessionInterval = dict["midSessionMessageSessionInterval"] as? Int {
+            configManager.midSessionMessageSessionInterval = midSessionMessageSessionInterval
+        }
+        
+        if let midSessionMessageDelay = dict["midSessionMessageDelay"] as? Int {
+            configManager.midSessionMessageDelay = midSessionMessageDelay
+        }
+        
+        if let midSessionMessageFrequencyCap = dict["midSessionMessageFrequencyCap"] as? Int {
+            configManager.midSessionMessageFrequencyCap = midSessionMessageFrequencyCap
+        }
+        
+        if let midSessionMessageVibrate = dict["midSessionMessageVibrate"] as? Bool {
+            configManager.midSessionMessageVibrate = midSessionMessageVibrate
+        }
+        
+        if let midSessionMessageVTA = dict["midSessionMessageVTA"] as? Bool {
+            configManager.midSessionMessageVTA = midSessionMessageVTA
+        }
+        
+        if let midSessionMessageOverlayDelay = dict["midSessionMessageOverlayDelay"] as? Int {
+            configManager.midSessionMessageOverlayDelay = midSessionMessageOverlayDelay
         }
         
         if configManager.adId == nil {

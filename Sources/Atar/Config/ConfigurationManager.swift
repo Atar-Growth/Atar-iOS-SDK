@@ -21,7 +21,7 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.0.4"
+    static public let LIB_VERSION = "1.0.5"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"
@@ -115,6 +115,45 @@ class ConfigurationManager {
         set { defaults.set(newValue, forKey: "atarInterstitialFrequencyCap")}
     }
     
+    var midSessionMessageEnabled: Bool {
+        get { return defaults.bool(forKey: "atarMidSessionMessageEnabled") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageEnabled")}
+    }
+    
+    var midSessionMessageDisabledClient: Bool {
+        get { return defaults.bool(forKey: "atarMidSessionMessageDisabledClient") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageDisabledClient")}
+    }
+    
+    var midSessionMessageSessionInterval: Int {
+        get { return defaults.integer(forKey: "atarMidSessionMessageSessionInterval") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageSessionInterval")}
+    }
+    
+    var midSessionMessageDelay: Int {
+        get { return defaults.integer(forKey: "atarMidSessionMessageDelay") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageDelay")}
+    }
+    
+    var midSessionMessageFrequencyCap: Int {
+        get { return defaults.integer(forKey: "atarMidSessionMessageFrequencyCap") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageFrequencyCap")}
+    }
+    
+    var midSessionMessageVibrate: Bool {
+        get { return defaults.bool(forKey: "atarMidSessionMessageVibrate") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageVibrate")}
+    }
+    
+    var midSessionMessageVTA: Bool {
+        get { return defaults.bool(forKey: "atarMidSessionMessageVTA") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageVTA")}
+    }
+    
+    var midSessionMessageOverlayDelay: Int {
+        get { return defaults.integer(forKey: "atarMidSessionMessageOverlayDelay") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageOverlayDelay")}
+    }
     
     var lastOfferRequest: OfferRequest? {
         get {
@@ -138,5 +177,15 @@ class ConfigurationManager {
     var lastInterstitialDate: Date? {
         get { defaults.object(forKey: "atarLastInterstitialDate") as? Date }
         set { defaults.set(newValue, forKey: "atarLastInterstitialDate") }
+    }
+    
+    var lastMessageDate: Date? {
+        get { defaults.object(forKey: "atarLastMessageDate") as? Date }
+        set { defaults.set(newValue, forKey: "atarLastMessageDate") }
+    }
+    
+    var sessionCount: Int {
+        get { return defaults.integer(forKey: "atarSessionCount") }
+        set { defaults.set(newValue, forKey: "atarSessionCount") }
     }
 }

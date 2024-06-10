@@ -55,6 +55,8 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         webView.scrollView.contentInset = UIEdgeInsets.zero
         webView.scrollView.bounces = false
         webView.navigationDelegate = self
+        webView.scrollView.minimumZoomScale = 1.0
+        webView.scrollView.maximumZoomScale = 1.0
         contentView.addSubview(webView)
 
         // Activity Indicator configuration
