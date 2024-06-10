@@ -36,13 +36,13 @@ You can verify that Atar has been successfully added by:
 
 Import the library in your **AppDelegate** class.
 
-*Swift*
+#### Swift
 
 ``` swift
 import Atar
 ```
 
-*Objective C*
+#### Objective C
 
 ``` objc
 #import "Atar-Swift.h"
@@ -50,8 +50,7 @@ import Atar
 
 Initialize the Atar SDK in your **AppDelegate** class's **didFinishLaunchingWithOptions** method.
 
-
-*Swift*
+#### Swift
 
 ``` swift
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -61,7 +60,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 }
 ```
 
-*Objective C*
+#### Objective C
 
 ``` objc
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -77,26 +76,29 @@ Replace **YOUR APP KEY** with the App Key you got from the Atar Dashboard.
 
 Once you've initialized the Atar SDK, you can show offers to your users. Here's an example of how you can show an interstitial offer after the user has completed a transaction.
 
-*Swift*
+#### Swift
 
 ```swift
 let request = OfferRequest()
-request.onScheduled = { success, error in
-    print("onScheduled: \(success), \(error?.localizedDescription ?? "no error")")
+request.onPopupShown = { success, error in
+    print("onPopupShown: \(success), \(error ?? "no error")")
 }
-request.onSent = {
-    print("onSent")
+request.onPopupCanceled = {
+    print("onPopupCanceled")
 }
 request.onClicked = {
     print("onClicked")
 }
+
+// required
 request.event = "purchase"
 request.userId = "userId5678"
+request.referenceId = "123456" // this is some unique reference ID for the transaction
+
+// recommended
 request.email = "user1234@email.com";
 request.phone = "1234567890";
 
-// this is some unique reference ID for the transaction
-request.referenceId = "123456"
 request.firstName = "Alex"
 request.lastName = "Austin"
 request.address1 = "123 Example St"
@@ -110,26 +112,29 @@ request.amount = 29.98
 Atar.getInstance().showOfferPopup(request: request)
 ```
 
-*Objective C*
+#### Objective C
 
 ```objc
 OfferRequest *request = [[OfferRequest alloc] init];
-request.onScheduled = ^(BOOL success, NSError * _Nullable error) {
-    NSLog(@"onScheduled: %d, %@", success, error.localizedDescription);
+request.onPopupShown = ^(BOOL success, NSString * _Nullable error) {
+    NSLog(@"onPopupShown: %d, %@", success, error);
 };
-request.onSent = ^{
-    NSLog(@"onSent");
+request.onPopupCanceled = ^{
+    NSLog(@"onPopupCanceled");
 };
 request.onClicked = ^{
     NSLog(@"onClicked");
 };
+
+// required
 request.event = @"purchase";
 request.userId = @"userId5678";
+request.referenceId = @"123456"; // this is some unique reference ID for the transaction
+
+// recommended
 request.email = @"user1234@email.com";
 request.phone = @"1234567890";
 
-// this is some unique reference ID for the transaction
-request.referenceId = @"123456";
 request.firstName = @"Alex";
 request.lastName = @"Austin";
 request.address1 = @"123 Example St";
@@ -152,9 +157,9 @@ Note that the callback is optional and purely in case you would like to tie any 
 | Req. | Field name  | Description                                    | Data type |
 |------|-------------|------------------------------------------------|-----------|
 | Req  | event       | User event that preceded the offers            | string    |
-| Req  | referenceId | Some ID for the reference for deduplication.   | string    |
-| Req  | email       | User email.                                    | string    |
+| Req  | referenceId | Some ID for reference for deduplication.       | string    |
 | Req  | userId      | Some ID for the user.                          | string    |
+| Rec  | email       | User email.                                    | string    |
 | Rec  | phone       | User phone number.                             | string    |
 | Rec  | gender      | User gender: M/F                               | string    |
 | Rec  | dob         | Date of birth, YYYYMMDD                        | string    |
@@ -168,6 +173,90 @@ Note that the callback is optional and purely in case you would like to tie any 
 | Opt  | city        | City                                           | string    |
 | Opt  | state       | State                                          | string    |
 | Opt  | country     | Country                                        | string    |
+
+## Step 5: Trigger offer notifications on user action
+
+You can also trigger offer notifications on user actions. Here's an example of how you can trigger an offer notification.
+
+#### Swift
+
+```swift
+let request = OfferRequest()
+request.onNotifScheduled = { success, error in
+    print("onNotifScheduled: \(success), \(error ?? "no error")")
+}
+request.onNotifSent = {
+    print("onNotifSent")
+}
+request.onClicked = {
+    print("onClicked")
+}
+request.event = "level_completed"
+request.referenceId = UUID().uuidString
+request.userId = "userId1234"
+
+Atar.getInstance().triggerOfferNotification(request: request)
+```
+
+#### Objective C
+
+```objc
+OfferRequest *request = [[OfferRequest alloc] init];
+request.onNotifScheduled = ^(BOOL success, NSString * _Nullable error) {
+    NSLog(@"onNotifScheduled: %d, %@", success, error);
+};
+request.onNotifSent = ^{
+    NSLog(@"onNotifSent");
+};
+request.onClicked = ^{
+    NSLog(@"onClicked");
+};
+request.event = @"level_completed";
+request.referenceId = [[NSUUID UUID] UUIDString];
+request.userId = @"userId1234";
+
+[[Atar getInstance] triggerOfferNotificationWithRequest:request];
+```
+
+### Customize the prefix for the push message
+
+You can customize the prefix for the push message by passing your custom string to the triggerOffer method as shown below:
+
+#### Swift
+
+```swift
+Atar.getInstance().triggerOfferNotification(request: request, titlePrefix: "You're awesome!")
+```
+
+#### Objective C
+
+```objc
+[[Atar getInstance] triggerOfferNotificationWithRequest:request titlePrefix:@"You're awesome!"];
+```
+
+## Step 6: Enable or disable the post session notification
+
+You have full control over whether post session notifications are enabled or disabled. By default, post session notifications are disabled, so you would have to have previously enabled it.
+
+### Disable post session notifications globally
+
+You can head to the [dashboard settings](https://app.atargrowth.com/settings) and disable post session notifications globally. This will disable post session notifications for all users.
+
+### Disable post session notifications for a specific user
+
+To disable for a specific user, you can use the following method in the SDK whenever. This is persisted in user defaults and will be remembered for the user.
+
+#### Swift
+
+```swift
+Atar.getInstance().setPostSessionNotifDisabled(disabled: true)
+```
+
+#### Objective C
+
+```objc
+[[Atar getInstance] setPostSessionNotifDisabledWithDisabled:YES];
+```
 
 ## Need help?
 
