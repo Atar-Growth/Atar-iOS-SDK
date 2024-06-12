@@ -9,7 +9,7 @@ import UIKit
 import WebKit
 import StoreKit
 
-class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverlayDelegate {
+class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverlayDelegate, SKStoreProductViewControllerDelegate {
     private let contentView = UIView()
     private var webView: WKWebView!
     private var clickWebView: WKWebView!
@@ -18,6 +18,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     private var lastOfferRequest: OfferRequest?
     private var offerObject: [String: String]?
     private var processedClick = false
+    private var overlayShown = false
     private var isShown = false
     private var hideInProgress = false
     
@@ -102,7 +103,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     @objc private func viewTapped() {
         Logger.shared.log("Atar message view tapped")
-        loadOverlay(andRoute: true)
+        loadStorePage()
         processClickURLAsync()
         if lastOfferRequest?.onClicked != nil {
             lastOfferRequest?.onClicked!()
@@ -112,7 +113,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     @objc private func viewSwiped() {
         Logger.shared.log("Atar message view tapped")
-        loadOverlay(andRoute: false)
+        loadOverlay()
         processClickURLAsync()
         if lastOfferRequest?.onPopupCanceled != nil {
             lastOfferRequest?.onPopupCanceled!()
@@ -160,8 +161,34 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         return nil
     }
     
-    private func loadOverlay(andRoute: Bool) {
-        if (processedClick) {
+    private func loadStorePage() {
+        if let appStoreUrl = offerObject?["destinationUrl"] {
+            if let id = extractAppStoreID(from: appStoreUrl) {
+                let storeViewController = SKStoreProductViewController()
+                storeViewController.delegate = self
+                
+                let parameters = [SKStoreProductParameterITunesItemIdentifier: id]
+                storeViewController.loadProduct(withParameters: parameters) { [weak self] (loaded, error) in
+                    if loaded {
+                        guard let keyWindow = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first else { return }
+                        guard let rootViewController = keyWindow.rootViewController else { return }
+                        
+                        var topController = rootViewController
+                        while let presentedController = topController.presentedViewController {
+                            topController = presentedController
+                        }
+                        
+                        topController.present(storeViewController, animated: true, completion: nil)
+                    } else {
+                        print("Failed to load product: \(error?.localizedDescription ?? "Unknown error")")
+                    }
+                }
+            }
+        }
+    }
+    
+    private func loadOverlay() {
+        if (overlayShown) {
             return
         }
         if let appStoreUrl = offerObject?["destinationUrl"] {
@@ -173,16 +200,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
                     let config = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottomRaised)
                     let overlay = SKOverlay(configuration: config)
                     overlay.present(in: scene)
-                } else if (andRoute) {
-                    // Fallback to open the App Store page
-                    if UIApplication.shared.canOpenURL(URL(string: appStoreUrl)!) {
-                        UIApplication.shared.open(URL(string: appStoreUrl)!, options: [:], completionHandler: nil)
-                    }
-                }
-            } else if (andRoute) {
-                // Fallback to open the App Store page
-                if UIApplication.shared.canOpenURL(URL(string: appStoreUrl)!) {
-                    UIApplication.shared.open(URL(string: appStoreUrl)!, options: [:], completionHandler: nil)
+                    overlayShown = true
                 }
             }
         }
@@ -231,6 +249,10 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         Logger.shared.log("Web view did fail loading with error: \(error)")
+        // if intentional cancel
+        if (error as NSError).code == 102 {
+            return
+        }
         hide()
     }
     
@@ -268,7 +290,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + Double(vtaDelay)) {
             if self.offerObject != nil && self.offerObject!["vta"] != "false" {
-                self.loadOverlay(andRoute: false)
+                self.loadOverlay()
                 self.processClickURLAsync()
             }
         }
@@ -293,6 +315,11 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
                 }
             }
         }
+    }
+    
+    @available(iOS 14.0, *)
+    func storeOverlayDidFinishDismissal(_ overlay: SKOverlay) {
+        overlayShown = false
     }
     
     private func hide() {
