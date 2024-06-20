@@ -96,8 +96,8 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         tapView.addGestureRecognizer(tapGesture)
     }
     private func addSwipeGestureRecognizer() {
-        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(viewTapped))
-        swipeGesture.direction = .up // You can change the direction as needed
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(viewSwiped))
+        swipeGesture.direction = .up
         tapView.addGestureRecognizer(swipeGesture)
     }
     
@@ -105,20 +105,26 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         Logger.shared.log("Atar message view tapped")
         loadStorePage()
         processClickURLAsync()
+        hide()
+        OfferFetcher.logOfferInteraction(with: offerObject ?? [:], forEvent: "message-tap")
         if lastOfferRequest?.onClicked != nil {
             lastOfferRequest?.onClicked!()
         }
-        hide()
     }
     
     @objc private func viewSwiped() {
-        Logger.shared.log("Atar message view tapped")
-        loadOverlay()
+        Logger.shared.log("Atar message view swiped")
+        if (ConfigurationManager.shared.midSessionMessageForcePopup) {
+            loadStorePage()
+        } else {
+            loadOverlay()
+        }
+        hide()
         processClickURLAsync()
+        OfferFetcher.logOfferInteraction(with: offerObject ?? [:], forEvent: "message-cancel")
         if lastOfferRequest?.onPopupCanceled != nil {
             lastOfferRequest?.onPopupCanceled!()
         }
-        hide()
     }
     
     private func processClickURLAsync() {

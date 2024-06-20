@@ -21,11 +21,12 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.0.6"
+    static public let LIB_VERSION = "1.0.7"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"
     static public let MESSAGE_PATH = "/message"
+    static public let EVENT_PATH = "/event"
     
     static let shared = ConfigurationManager()
     
@@ -143,6 +144,11 @@ class ConfigurationManager {
     var midSessionMessageVibrate: Bool {
         get { return defaults.bool(forKey: "atarMidSessionMessageVibrate") }
         set { defaults.set(newValue, forKey: "atarMidSessionMessageVibrate")}
+    }
+    
+    var midSessionMessageForcePopup: Bool {
+        get { return defaults.bool(forKey: "atarMidSessionMessageForcePopup") }
+        set { defaults.set(newValue, forKey: "atarMidSessionMessageForcePopup")}
     }
     
     var midSessionMessageVTA: Bool {

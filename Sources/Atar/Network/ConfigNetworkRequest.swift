@@ -153,6 +153,10 @@ class ConfigNetworkRequest {
             configManager.midSessionMessageVibrate = midSessionMessageVibrate
         }
         
+        if let midSessionMessageForcePopup = dict["midSessionMessageForcePopup"] as? Bool {
+            configManager.midSessionMessageForcePopup = midSessionMessageForcePopup
+        }
+        
         if let midSessionMessageVTA = dict["midSessionMessageVTA"] as? Bool {
             configManager.midSessionMessageVTA = midSessionMessageVTA
         }

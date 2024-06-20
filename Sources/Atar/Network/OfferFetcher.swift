@@ -97,6 +97,24 @@ class OfferFetcher {
         return getWebUrlWithPath(ConfigurationManager.MESSAGE_PATH, offerRequest: offerRequest)
     }
     
+    public static func logOfferInteraction(with offerObject: [String: String], forEvent event: String) {
+        let request = OfferRequest()
+        if var urlComponents = URLComponents(url: getWebUrlWithPath(ConfigurationManager.EVENT_PATH, offerRequest: request)!, resolvingAgainstBaseURL: false) {
+            let eventQueryItem = URLQueryItem(name: "event", value: event)
+            let offerQueryItem = URLQueryItem(name: "oId", value: offerObject["offerId"])
+            if urlComponents.queryItems == nil {
+                urlComponents.queryItems = [eventQueryItem, offerQueryItem]
+            } else {
+                urlComponents.queryItems?.append(eventQueryItem)
+                urlComponents.queryItems?.append(offerQueryItem)
+            }
+            let url = urlComponents.url
+            
+            Logger.shared.log("event URL: \(url)")
+            NetworkManager.shared.getRequest(url: url!) { _ in }
+        }
+    }
+    
     public static func getWebUrlWithPath(_ path: String, offerRequest: OfferRequest) -> URL? {
         let configManager = ConfigurationManager.shared
         let baseUrl = configManager.apiUrl
@@ -125,15 +143,17 @@ class OfferFetcher {
         }
 
         // Append parameters from the OfferRequest instance
-        let requestParameters = offerRequest.toDictionary().compactMapValues { $0 }
-        let requestQueryItems = requestParameters.map { key, value -> URLQueryItem in
-            let valueString = "\(value)"
-            return URLQueryItem(name: key, value: valueString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+        if (offerRequest != nil) {
+            let requestParameters = offerRequest.toDictionary().compactMapValues { $0 }
+            let requestQueryItems = requestParameters.map { key, value -> URLQueryItem in
+                let valueString = "\(value)"
+                return URLQueryItem(name: key, value: valueString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+            }
+            
+            // Combine predefined and request-specific query items
+            queryItems.append(contentsOf: requestQueryItems)
         }
         
-        // Combine predefined and request-specific query items
-        queryItems.append(contentsOf: requestQueryItems)
-
         components.queryItems = queryItems
         
         return components.url
