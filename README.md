@@ -178,43 +178,45 @@ Note that the callback is optional and purely in case you would like to tie any 
 
 You can also trigger offer message on user actions. Here's an example of how you can trigger an offer message.
 
-=== "Swift"
-    ```swift
-    let request = OfferRequest()
-    request.onPopupShown = { success, error in
-        print("onPopupShown: \(success), \(error ?? "no error")")
-    }
-    request.onPopupCanceled = {
-        print("onPopupCanceled")
-    }
-    request.onClicked = {
-        print("onClicked")
-    }
-    request.event = "level_completed"
-    request.referenceId = UUID().uuidString
-    request.userId = "userId1234"
-    
-    Atar.getInstance().showOfferMessage(request: request)
-    ```
+**Swift**
 
-=== "Objective C"
-    ```objc
-    OfferRequest *request = [[OfferRequest alloc] init];
-    request.onPopupShown = ^(BOOL success, NSString * _Nullable error) {
-        NSLog(@"onPopupShown: %d, %@", success, error);
-    };
-    request.onPopupCanceled = ^{
-        NSLog(@"onPopupCanceled");
-    };
-    request.onClicked = ^{
-        NSLog(@"onClicked");
-    };
-    request.event = @"level_completed";
-    request.referenceId = [[NSUUID UUID] UUIDString];
-    request.userId = @"userId1234";
-    
-    [[Atar getInstance] showOfferMessageWithRequest:request];
-    ```
+```swift
+let request = OfferRequest()
+request.onPopupShown = { success, error in
+    print("onPopupShown: \(success), \(error ?? "no error")")
+}
+request.onPopupCanceled = {
+    print("onPopupCanceled")
+}
+request.onClicked = {
+    print("onClicked")
+}
+request.event = "level_completed"
+request.referenceId = UUID().uuidString
+request.userId = "userId1234"
+
+Atar.getInstance().triggerOfferNotification(request: request)
+```
+
+**Objective C**
+
+```objc
+OfferRequest *request = [[OfferRequest alloc] init];
+request.onPopupShown = ^(BOOL success, NSString * _Nullable error) {
+    NSLog(@"onPopupShown: %d, %@", success, error);
+};
+request.onPopupCanceled = ^{
+    NSLog(@"onPopupCanceled");
+};
+request.onClicked = ^{
+    NSLog(@"onClicked");
+};
+request.event = @"level_completed";
+request.referenceId = [[NSUUID UUID] UUIDString];
+request.userId = @"userId1234";
+
+[[Atar getInstance] triggerOfferNotificationWithRequest:request];
+```
 
 ## Step 6: Enable or disable the post session notification
 
@@ -228,15 +230,17 @@ You can head to the [dashboard settings](https://app.atargrowth.com/settings) an
 
 To disable for a specific user, you can use the following method in the SDK whenever. This is persisted in user defaults and will be remembered for the user.
 
-=== "Swift"
-    ```swift
-    Atar.getInstance().setPostSessionNotifDisabled(disabled: true)
-    ```
+**Swift**
 
-=== "Objective C"
-    ```objc
-    [[Atar getInstance] setPostSessionNotifDisabledWithDisabled:YES];
-    ```
+```swift
+Atar.getInstance().setPostSessionNotifDisabled(disabled: true)
+```
+
+**Objective C**
+
+```objc
+[[Atar getInstance] setPostSessionNotifDisabledWithDisabled:YES];
+```
 
 ## Step 7: Enable or disable the mid session message popup
 
@@ -250,15 +254,17 @@ You can head to the [dashboard settings](https://app.atargrowth.com/settings) an
 
 To disable for a specific user, you can use the following method in the SDK whenever. This is persisted in user defaults and will be remembered for the user.
 
-=== "Swift"
-    ```swift
-    Atar.getInstance().setMidSessionMessageDisabled(disabled: true)
-    ```
+**Swift**
 
-=== "Objective C"
-    ```objc
-    [[Atar getInstance] setMidSessionMessageDisabled:YES];
-    ```
+```swift
+Atar.getInstance().setMidSessionMessageDisabled(disabled: true)
+```
+
+**Objective C**
+
+```objc
+[[Atar getInstance] setMidSessionMessageDisabled:YES];
+```
 
 ## Need help?
 
