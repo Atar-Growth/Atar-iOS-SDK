@@ -9,7 +9,7 @@ import UIKit
 import WebKit
 import StoreKit
 
-class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverlayDelegate, SKStoreProductViewControllerDelegate {
+class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     private let contentView = UIView()
     private var webView: WKWebView!
     private var clickWebView: WKWebView!
@@ -17,8 +17,6 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     private let cornerRadius: CGFloat = 10
     private var lastOfferRequest: OfferRequest?
     private var offerObject: [String: String]?
-    private var processedClick = false
-    private var overlayShown = false
     private var isShown = false
     private var hideInProgress = false
     
@@ -103,10 +101,17 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     @objc private func viewTapped() {
         Logger.shared.log("Atar message view tapped")
-        loadStorePage()
-        processClickURLAsync()
-        hide()
+        do {
+            if let currOfferObject = offerObject {
+                if let clickUrl = URL(string: currOfferObject["clickUrl"]!) {
+                    UIApplication.shared.open(clickUrl, options: [:], completionHandler: nil)
+                }
+            }
+        } catch {
+            Logger.shared.log("Error processing click")
+        }
         OfferFetcher.logOfferInteraction(with: offerObject ?? [:], forEvent: "message-tap")
+        hide()
         if lastOfferRequest?.onClicked != nil {
             lastOfferRequest?.onClicked!()
         }
@@ -114,101 +119,10 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     @objc private func viewSwiped() {
         Logger.shared.log("Atar message view swiped")
-        if (ConfigurationManager.shared.midSessionMessageForcePopup) {
-            loadStorePage()
-        } else {
-            loadOverlay()
-        }
         hide()
-        processClickURLAsync()
         OfferFetcher.logOfferInteraction(with: offerObject ?? [:], forEvent: "message-cancel")
         if lastOfferRequest?.onPopupCanceled != nil {
             lastOfferRequest?.onPopupCanceled!()
-        }
-    }
-    
-    private func processClickURLAsync() {
-        guard let clickUrlString = offerObject?["clickUrl"],
-              let clickUrl = URL(string: clickUrlString) else {
-            return
-        }
-        
-        if !processedClick {
-            let webViewConfiguration = WKWebViewConfiguration()
-            webViewConfiguration.preferences.javaScriptEnabled = true
-            
-            clickWebView = WKWebView(frame: .zero, configuration: webViewConfiguration)
-            clickWebView.isHidden = true
-            clickWebView.navigationDelegate = self
-            addSubview(clickWebView)
-            
-            let urlRequest = URLRequest(url: clickUrl)
-            clickWebView.load(urlRequest)
-        
-            processedClick = true
-            Logger.shared.log("Atar message view click url: \(clickUrl)")
-        }
-    }
-    
-    func extractAppStoreID(from urlString: String) -> String? {
-        let pattern = "/id([0-9]+)"
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-            return nil
-        }
-
-        let nsString = urlString as NSString
-        let results = regex.matches(in: urlString, options: [], range: NSRange(location: 0, length: nsString.length))
-
-        if let match = results.first {
-            let idRange = match.range(at: 1)
-            return nsString.substring(with: idRange)
-        }
-
-        return nil
-    }
-    
-    private func loadStorePage() {
-        if let appStoreUrl = offerObject?["destinationUrl"] {
-            if let id = extractAppStoreID(from: appStoreUrl) {
-                let storeViewController = SKStoreProductViewController()
-                storeViewController.delegate = self
-                
-                let parameters = [SKStoreProductParameterITunesItemIdentifier: id]
-                storeViewController.loadProduct(withParameters: parameters) { [weak self] (loaded, error) in
-                    if loaded {
-                        guard let keyWindow = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first else { return }
-                        guard let rootViewController = keyWindow.rootViewController else { return }
-                        
-                        var topController = rootViewController
-                        while let presentedController = topController.presentedViewController {
-                            topController = presentedController
-                        }
-                        
-                        topController.present(storeViewController, animated: true, completion: nil)
-                    } else {
-                        print("Failed to load product: \(error?.localizedDescription ?? "Unknown error")")
-                    }
-                }
-            }
-        }
-    }
-    
-    private func loadOverlay() {
-        if (overlayShown) {
-            return
-        }
-        if let appStoreUrl = offerObject?["destinationUrl"] {
-            if #available(iOS 14.0, *) {
-                if let id = extractAppStoreID(from: appStoreUrl) {
-                    guard let keyWindow = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first else { return }
-                    guard let scene = keyWindow.windowScene else { return }
-                    
-                    let config = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottomRaised)
-                    let overlay = SKOverlay(configuration: config)
-                    overlay.present(in: scene)
-                    overlayShown = true
-                }
-            }
         }
     }
     
@@ -224,30 +138,6 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         layer.shadowPath = UIBezierPath(roundedRect: CGRect(x: 10, y: 25, width: self.viewWidth-20, height: self.viewHeight-20), cornerRadius: cornerRadius).cgPath
     }
     
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        Logger.shared.log("Atar message view decide policy for navigation action: \(navigationAction.request.url?.absoluteString ?? "nil")")
-        if let url = navigationAction.request.url {
-            // Check if the URL contains "apps.apple" or "itunes.apple"
-            if url.host?.contains("apps.apple") == true || url.host?.contains("itunes.apple") == true {
-                decisionHandler(.cancel)
-                return
-            }
-            
-            // Convert http to https
-            if url.scheme == "http" {
-                var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-                components?.scheme = "https"
-                if let secureURL = components?.url {
-                    let secureRequest = URLRequest(url: secureURL)
-                    webView.load(secureRequest)
-                    decisionHandler(.cancel)
-                    return
-                }
-            }
-        }
-        decisionHandler(.allow)
-    }
-    
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         Logger.shared.log("Atar message view loaded")
         show()
@@ -255,10 +145,6 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
     
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         Logger.shared.log("Web view did fail loading with error: \(error)")
-        // if intentional cancel
-        if (error as NSError).code == 102 {
-            return
-        }
         hide()
     }
     
@@ -281,24 +167,15 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
         if lastOfferRequest?.onPopupShown != nil {
             lastOfferRequest?.onPopupShown?(true, nil)
         }
+        if (lastOfferRequest?.onNotifScheduled != nil) {
+            lastOfferRequest?.onNotifScheduled!(true, nil)
+        }
+        if lastOfferRequest?.onNotifSent != nil {
+            lastOfferRequest?.onNotifSent!()
+        }
         
         if (ConfigurationManager.shared.midSessionMessageVibrate) {
             UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        }
-
-        if !ConfigurationManager.shared.midSessionMessageVTA {
-            Logger.shared.log("VTA disabled from app config")
-            return
-        }
-        var vtaDelay = 3
-        if ConfigurationManager.shared.midSessionMessageOverlayDelay > 0 {
-            vtaDelay = ConfigurationManager.shared.midSessionMessageOverlayDelay/1000
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(vtaDelay)) {
-            if self.offerObject != nil && self.offerObject!["vta"] != "false" {
-                self.loadOverlay()
-                self.processClickURLAsync()
-            }
         }
     }
     
@@ -315,17 +192,13 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler, SKOverl
                         return
                     }
                     offerObject = offerObj
+                    let evalUrlQuality = URL(string: offerObj!["clickUrl"]!)
                 } catch {
                     Logger.shared.log("Error parsing JSON from message body: \(error)")
                     hide()
                 }
             }
         }
-    }
-    
-    @available(iOS 14.0, *)
-    func storeOverlayDidFinishDismissal(_ overlay: SKOverlay) {
-        overlayShown = false
     }
     
     private func hide() {

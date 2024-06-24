@@ -117,6 +117,10 @@ class ConfigNetworkRequest {
             configManager.postSessionNotifDelay = postSessionNotifDelay
         }
         
+        if let postSessionNotifMinActiveTime = dict["postSessionNotifMinActiveTime"] as? Int {
+            configManager.postSessionNotifMinActiveTime = postSessionNotifMinActiveTime
+        }
+        
         if let triggeredNotifPrefix = dict["triggeredNotifPrefix"] as? String {
             configManager.triggeredNotifPrefix = triggeredNotifPrefix
         }
@@ -151,18 +155,6 @@ class ConfigNetworkRequest {
         
         if let midSessionMessageVibrate = dict["midSessionMessageVibrate"] as? Bool {
             configManager.midSessionMessageVibrate = midSessionMessageVibrate
-        }
-        
-        if let midSessionMessageForcePopup = dict["midSessionMessageForcePopup"] as? Bool {
-            configManager.midSessionMessageForcePopup = midSessionMessageForcePopup
-        }
-        
-        if let midSessionMessageVTA = dict["midSessionMessageVTA"] as? Bool {
-            configManager.midSessionMessageVTA = midSessionMessageVTA
-        }
-        
-        if let midSessionMessageOverlayDelay = dict["midSessionMessageOverlayDelay"] as? Int {
-            configManager.midSessionMessageOverlayDelay = midSessionMessageOverlayDelay
         }
         
         if configManager.adId == nil {

@@ -101,11 +101,13 @@ class OfferFetcher {
         let request = OfferRequest()
         if var urlComponents = URLComponents(url: getWebUrlWithPath(ConfigurationManager.EVENT_PATH, offerRequest: request)!, resolvingAgainstBaseURL: false) {
             let eventQueryItem = URLQueryItem(name: "event", value: event)
-            let offerQueryItem = URLQueryItem(name: "oId", value: offerObject["offerId"])
             if urlComponents.queryItems == nil {
-                urlComponents.queryItems = [eventQueryItem, offerQueryItem]
+                urlComponents.queryItems = [eventQueryItem]
             } else {
                 urlComponents.queryItems?.append(eventQueryItem)
+            }
+            if (offerObject["offerId"] != nil) {
+                let offerQueryItem = URLQueryItem(name: "oId", value: offerObject["offerId"])
                 urlComponents.queryItems?.append(offerQueryItem)
             }
             let url = urlComponents.url

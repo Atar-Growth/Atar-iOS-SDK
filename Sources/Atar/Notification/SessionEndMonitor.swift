@@ -11,8 +11,6 @@ class SessionEndMonitor {
     static let shared = SessionEndMonitor()
     private var startTime: Date?
     private var didBackground = true
-    private var didFireMessage = false
-    private let minimumActiveTime: TimeInterval = 5
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     init() {
@@ -31,7 +29,7 @@ class SessionEndMonitor {
         if !didBackground {
             return
         }
-        self.didBackground = false
+        didBackground = false
         
         startTime = Date()
         
@@ -48,7 +46,6 @@ class SessionEndMonitor {
                     return
                 }
                 Logger.shared.log("Mid session message sent")
-                self.didFireMessage = true
                 let offerRequest = OfferRequest()
                 offerRequest.event = "auto_message"
                 Atar.shared?.showOfferMessage(request: offerRequest)
@@ -59,18 +56,17 @@ class SessionEndMonitor {
     @objc private func appDidEnterBackground() {
         Logger.shared.log( "App entered background")
         didBackground = true
-        if didFireMessage {
-            didFireMessage = false
-            return
-        }
         if ConfigurationManager.shared.sessionCount < 2 {
+            Logger.shared.log("Post session notif not sent. Session count less than 2.")
             return
         }
         if ConfigurationManager.shared.postSessionNotifEnabled == false {
+            Logger.shared.log("Post session notif not enabled.")
             return
         }
         
-        if Date().timeIntervalSince(startTime ?? Date()) < minimumActiveTime {
+        if Int(Date().timeIntervalSince(startTime ?? Date())) < ConfigurationManager.shared.postSessionNotifMinActiveTime/1000 {
+            Logger.shared.log("Post session notif not sent. Min active time not reached.")
             return
         }
         

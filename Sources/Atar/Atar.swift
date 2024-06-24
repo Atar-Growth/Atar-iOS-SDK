@@ -74,6 +74,12 @@ public class Atar: NSObject {
     }
     
     @objc
+    public func setAllAutoAdsDisabled(disabled: Bool) {
+        ConfigurationManager.shared.postSessionNotifDisabledClient = disabled
+        ConfigurationManager.shared.midSessionMessageDisabledClient = disabled
+    }
+    
+    @objc
     public func triggerOfferNotification(request: OfferRequest, titlePrefix: String = "") {
         var internalTitlePrefix = titlePrefix
         if internalTitlePrefix.isEmpty {
@@ -85,11 +91,9 @@ public class Atar: NSObject {
                     NotificationManager.triggerImmediateNotif(request: request, titlePrefix: internalTitlePrefix)
                 }
             } else {
-                Logger.shared.log("Atar will not show offers. Notifications are not enabled.")
-                if (request.onNotifScheduled != nil) {
-                    DispatchQueue.main.async {
-                        request.onNotifScheduled!(false, "Notification permissions are not enabled")
-                    }
+                DispatchQueue.main.async {
+                    self.messageView = MessageView()
+                    self.messageView!.configureAndShow(withRequest: request)
                 }
             }
         }

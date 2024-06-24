@@ -21,7 +21,7 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.0.7"
+    static public let LIB_VERSION = "1.1.0"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"
@@ -91,6 +91,11 @@ class ConfigurationManager {
         set { defaults.set(newValue, forKey: "atarPostSessionNotifDelay")}
     }
     
+    var postSessionNotifMinActiveTime: Int {
+        get { return defaults.integer(forKey: "atarPostSessionNotifMinActiveTime") }
+        set { defaults.set(newValue, forKey: "atarPostSessionNotifMinActiveTime")}
+    }
+    
     var postSessionNotifPrefix: String {
         get { return defaults.string(forKey: "atarPostSessionNotifPrefix") ?? "Thanks!" }
         set { defaults.set(newValue, forKey: "atarPostSessionNotifPrefix")}
@@ -144,21 +149,6 @@ class ConfigurationManager {
     var midSessionMessageVibrate: Bool {
         get { return defaults.bool(forKey: "atarMidSessionMessageVibrate") }
         set { defaults.set(newValue, forKey: "atarMidSessionMessageVibrate")}
-    }
-    
-    var midSessionMessageForcePopup: Bool {
-        get { return defaults.bool(forKey: "atarMidSessionMessageForcePopup") }
-        set { defaults.set(newValue, forKey: "atarMidSessionMessageForcePopup")}
-    }
-    
-    var midSessionMessageVTA: Bool {
-        get { return defaults.bool(forKey: "atarMidSessionMessageVTA") }
-        set { defaults.set(newValue, forKey: "atarMidSessionMessageVTA")}
-    }
-    
-    var midSessionMessageOverlayDelay: Int {
-        get { return defaults.integer(forKey: "atarMidSessionMessageOverlayDelay") }
-        set { defaults.set(newValue, forKey: "atarMidSessionMessageOverlayDelay")}
     }
     
     var lastOfferRequest: OfferRequest? {

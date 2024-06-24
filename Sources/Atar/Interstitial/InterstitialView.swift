@@ -119,6 +119,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
 
     @objc func cancel() {
         dismiss()
+        OfferFetcher.logOfferInteraction(with: [:], forEvent: "popup-cancel")
         if let offerRequest = lastOfferRequest {
             offerRequest.onPopupCanceled?()
         }
@@ -148,6 +149,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                     let clickObj = try JSONSerialization.jsonObject(with: jsonData) as? [String: String]
                     if let clickObj = clickObj {
                         UIApplication.shared.open(URL(string: clickObj["clickUrl"]!)!, options: [:], completionHandler: nil)
+                        OfferFetcher.logOfferInteraction(with: [:], forEvent: "popup-tap")
                     }
                 } catch {
                     Logger.shared.log("Error parsing JSON from message body: \(error)")
