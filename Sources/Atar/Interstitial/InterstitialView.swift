@@ -148,6 +148,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                 do {
                     let clickObj = try JSONSerialization.jsonObject(with: jsonData) as? [String: String]
                     if let clickObj = clickObj {
+                        SessionEndMonitor.shared.justClicked = true
                         UIApplication.shared.open(URL(string: clickObj["clickUrl"]!)!, options: [:], completionHandler: nil)
                         OfferFetcher.logOfferInteraction(with: [:], forEvent: "popup-tap")
                     }

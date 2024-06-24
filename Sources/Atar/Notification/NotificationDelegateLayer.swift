@@ -32,13 +32,16 @@ class NotificationDelegateLayer: NSObject, UNUserNotificationCenterDelegate {
                 }
             }
             
+            let offerId = userInfo["offerId"] as? String
             let clickUrl = userInfo["clickUrl"] as? String
             let destinationUrl = userInfo["destinationUrl"] as? String
             
             let lastRequest = ConfigurationManager.shared.lastOfferRequest
-            if lastRequest != nil && ConfigurationManager.shared.notifRouteToPopup {
+            if lastRequest != nil && ConfigurationManager.shared.notifRouteToPopup && lastRequest?.event == "session_end" {
+                lastRequest?.prevOfferId = offerId
                 Atar.getInstance().showOfferPopup(request: lastRequest!)
             } else {
+                SessionEndMonitor.shared.justClicked = true
                 if clickUrl != nil {
                     UIApplication.shared.open(URL(string: clickUrl!)!, options: [:], completionHandler: nil)
                 } else if destinationUrl != nil {

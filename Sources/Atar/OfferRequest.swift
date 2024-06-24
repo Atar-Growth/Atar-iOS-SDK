@@ -18,6 +18,7 @@ public class OfferRequest: NSObject {
 
     public var event: String?
     public var referenceId: String?
+    public var prevOfferId: String?
     public var email: String?
     public var userId: String?
     public var amount: Double?
@@ -40,6 +41,7 @@ public class OfferRequest: NSObject {
         
         if let event = self.event { dict[OfferRequestKeys.event] = event }
         if let referenceId = self.referenceId { dict[OfferRequestKeys.referenceId] = referenceId }
+        if let prevOfferId = self.prevOfferId { dict[OfferRequestKeys.prevOfferId] = prevOfferId }
         if let email = self.email { dict[OfferRequestKeys.email] = email }
         if let userId = self.userId { dict[OfferRequestKeys.userId] = userId }
         if let amount = self.amount { dict[OfferRequestKeys.amount] = amount }
@@ -63,6 +65,7 @@ public class OfferRequest: NSObject {
     func fromDictionary(dictionary: [String: Any]) {
         self.event = dictionary[OfferRequestKeys.event] as? String
         self.referenceId = dictionary[OfferRequestKeys.referenceId] as? String
+        self.prevOfferId = dictionary[OfferRequestKeys.prevOfferId] as? String
         self.email = dictionary[OfferRequestKeys.email] as? String
         self.userId = dictionary[OfferRequestKeys.userId] as? String
         self.amount = dictionary[OfferRequestKeys.amount] as? Double
@@ -85,6 +88,7 @@ public class OfferRequest: NSObject {
 struct OfferRequestKeys {
     static let event = "event"
     static let referenceId = "referenceId"
+    static let prevOfferId = "prevOfferId"
     static let email = "email"
     static let userId = "userId"
     static let amount = "amount"

@@ -11,6 +11,7 @@ class SessionEndMonitor {
     static let shared = SessionEndMonitor()
     private var startTime: Date?
     private var didBackground = true
+    public var justClicked = false
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     init() {
@@ -29,6 +30,7 @@ class SessionEndMonitor {
         if !didBackground {
             return
         }
+        justClicked = false
         didBackground = false
         
         startTime = Date()
@@ -56,6 +58,10 @@ class SessionEndMonitor {
     @objc private func appDidEnterBackground() {
         Logger.shared.log( "App entered background")
         didBackground = true
+        if justClicked {
+            justClicked = false
+            return
+        }
         if ConfigurationManager.shared.sessionCount < 2 {
             Logger.shared.log("Post session notif not sent. Session count less than 2.")
             return

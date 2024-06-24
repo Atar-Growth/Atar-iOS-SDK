@@ -108,6 +108,10 @@ class NotificationManager {
             requestParams = lastOfferRequest!.toDictionary()
         }
         requestParams["event"] = "session_end"
+        
+        let toSend = OfferRequest()
+        toSend.event = "session_end"
+        ConfigurationManager.shared.lastOfferRequest = toSend
                 
         OfferFetcher.fetchOffer(with: requestParams) { offer, error in
             

@@ -101,6 +101,7 @@ class MessageView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     
     @objc private func viewTapped() {
         Logger.shared.log("Atar message view tapped")
+        SessionEndMonitor.shared.justClicked = true
         do {
             if let currOfferObject = offerObject {
                 if let clickUrl = URL(string: currOfferObject["clickUrl"]!) {
