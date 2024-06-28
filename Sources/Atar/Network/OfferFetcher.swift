@@ -110,6 +110,10 @@ class OfferFetcher {
                 let offerQueryItem = URLQueryItem(name: "oId", value: offerObject["offerId"])
                 urlComponents.queryItems?.append(offerQueryItem)
             }
+            if (offerObject["offerRequestId"] != nil) {
+                let offerQueryItem = URLQueryItem(name: "orId", value: offerObject["offerRequestId"])
+                urlComponents.queryItems?.append(offerQueryItem)
+            }
             let url = urlComponents.url
             
             Logger.shared.log("event URL: \(url)")

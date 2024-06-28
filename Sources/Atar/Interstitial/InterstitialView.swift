@@ -150,7 +150,7 @@ class InterstitialView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                     if let clickObj = clickObj {
                         SessionEndMonitor.shared.justClicked = true
                         UIApplication.shared.open(URL(string: clickObj["clickUrl"]!)!, options: [:], completionHandler: nil)
-                        OfferFetcher.logOfferInteraction(with: [:], forEvent: "popup-tap")
+                        OfferFetcher.logOfferInteraction(with: clickObj, forEvent: "popup-tap")
                     }
                 } catch {
                     Logger.shared.log("Error parsing JSON from message body: \(error)")
