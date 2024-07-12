@@ -21,7 +21,7 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.1.2"
+    static public let LIB_VERSION = "1.1.3"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"

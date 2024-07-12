@@ -79,8 +79,35 @@ public class Atar: NSObject {
         ConfigurationManager.shared.midSessionMessageDisabledClient = disabled
     }
     
+    func determineIfInterstitialEligible(request: OfferRequest) -> Bool {
+        if !ConfigurationManager.shared.interstitialAdEnabled {
+            Logger.shared.log("Atar will not show offers. Interstitial ad is not enabled.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Interstitial ad is not enabled")
+                }
+            }
+            return false
+        }
+        if !FrequencyCapTracker.shared.canShowInterstitial() {
+            Logger.shared.log("Atar will not show offers. Frequency cap is reached.")
+            if (request.onPopupShown != nil) {
+                DispatchQueue.main.async {
+                    request.onPopupShown!(false, "Frequency cap is reached")
+                }
+            }
+            return false
+        }
+        return true
+    }
+    
     @objc
     public func triggerOfferNotification(request: OfferRequest, titlePrefix: String = "") {
+        if (!determineIfInterstitialEligible(request: request)) {
+            return
+        }
+        FrequencyCapTracker.shared.incrementInterstitialCount()
+        
         var internalTitlePrefix = titlePrefix
         if internalTitlePrefix.isEmpty {
             internalTitlePrefix = ConfigurationManager.shared.triggeredNotifPrefix
@@ -102,26 +129,11 @@ public class Atar: NSObject {
     
     @objc
     public func showOfferPopup(request: OfferRequest) {
-        if !ConfigurationManager.shared.interstitialAdEnabled {
-            Logger.shared.log("Atar will not show offers. Interstitial ad is not enabled.")
-            if (request.onPopupShown != nil) {
-                DispatchQueue.main.async {
-                    request.onPopupShown!(false, "Interstitial ad is not enabled")
-                }
-            }
-            return
-        }
-        if !FrequencyCapTracker.shared.canShowInterstitial() {
-            Logger.shared.log("Atar will not show offers. Frequency cap is reached.")
-            if (request.onPopupShown != nil) {
-                DispatchQueue.main.async {
-                    request.onPopupShown!(false, "Frequency cap is reached")
-                }
-            }
+        if (!determineIfInterstitialEligible(request: request)) {
             return
         }
         FrequencyCapTracker.shared.incrementInterstitialCount()
-        
+    
         if (interstitialView == nil) {
             interstitialView = InterstitialView()
         }
