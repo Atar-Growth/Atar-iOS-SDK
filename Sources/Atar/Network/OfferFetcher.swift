@@ -40,6 +40,7 @@ class OfferFetcher {
             "aId": ConfigurationManager.shared.anonId ?? "none",
             "os": "ios",
             "platform": deviceModel,
+            "nE": ConfigurationManager.shared.notifsEnabled,
             "request": parameters,
             "count": 1,
             "type": "notif"
@@ -89,7 +90,7 @@ class OfferFetcher {
     }
     
     public static func getOfferWebUrl(with offerRequest: OfferRequest) -> URL? {
-//        return URL(string: "https://postintent-hosting.s3.amazonaws.com/public/carousel.html")
+//        return URL(string: "https://postintent-hosting.s3.amazonaws.com/public/table.html")
         return getWebUrlWithPath(ConfigurationManager.OFFERS_PATH, offerRequest: offerRequest)
     }
     
@@ -140,6 +141,7 @@ class OfferFetcher {
             URLQueryItem(name: "os", value: "ios"),
             URLQueryItem(name: "platform", value: deviceModel),
             URLQueryItem(name: "lV", value: ConfigurationManager.LIB_VERSION),
+            URLQueryItem(name: "nE", value: "\(configManager.notifsEnabled)"),
             URLQueryItem(name: "startTime", value: ISO8601DateFormatter().string(from: Date()))
         ]
 

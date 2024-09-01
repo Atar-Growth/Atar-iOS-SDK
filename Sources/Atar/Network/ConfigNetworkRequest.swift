@@ -39,6 +39,7 @@ class ConfigNetworkRequest {
                               URLQueryItem(name: "aV", value: appVersion),
                               URLQueryItem(name: "os", value: "ios"),
                               URLQueryItem(name: "platform", value: deviceModel),
+                              URLQueryItem(name: "nE", value: "\(self.configManager.notifsEnabled)"),
                               URLQueryItem(name: "lV", value: ConfigurationManager.LIB_VERSION)]
             if self.configManager.adId != nil {
                 queryItems.append(URLQueryItem(name: "adId", value: self.configManager.adId))
@@ -119,6 +120,14 @@ class ConfigNetworkRequest {
         
         if let postSessionNotifMinActiveTime = dict["postSessionNotifMinActiveTime"] as? Int {
             configManager.postSessionNotifMinActiveTime = postSessionNotifMinActiveTime
+        }
+        
+        if let postSessionNotifMinSessionCount = dict["postSessionNotifMinSessionCount"] as? Int {
+            configManager.postSessionNotifMinSessionCount = postSessionNotifMinSessionCount
+        }
+        
+        if let postSessionNotifSessionInterval = dict["postSessionNotifSessionInterval"] as? Int {
+            configManager.postSessionNotifSessionInterval = postSessionNotifSessionInterval
         }
         
         if let triggeredNotifPrefix = dict["triggeredNotifPrefix"] as? String {

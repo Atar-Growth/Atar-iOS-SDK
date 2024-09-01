@@ -21,7 +21,7 @@ import Foundation
  */
 
 class ConfigurationManager {
-    static public let LIB_VERSION = "1.1.3"
+    static public let LIB_VERSION = "1.1.4"
     static public let CONFIG_PATH = "/config"
     static public let SYNC_PATH = "/sync"
     static public let OFFERS_PATH = "/offers"
@@ -94,6 +94,16 @@ class ConfigurationManager {
     var postSessionNotifMinActiveTime: Int {
         get { return defaults.integer(forKey: "atarPostSessionNotifMinActiveTime") }
         set { defaults.set(newValue, forKey: "atarPostSessionNotifMinActiveTime")}
+    }
+    
+    var postSessionNotifMinSessionCount: Int {
+        get { return defaults.integer(forKey: "atarPostSessionNotifMinSessionCount") }
+        set { defaults.set(newValue, forKey: "atarPostSessionNotifMinSessionCount")}
+    }
+    
+    var postSessionNotifSessionInterval: Int {
+        get { return defaults.integer(forKey: "atarPostSessionNotifSessionInterval") }
+        set { defaults.set(newValue, forKey: "atarPostSessionNotifSessionInterval")}
     }
     
     var postSessionNotifPrefix: String {
@@ -183,5 +193,10 @@ class ConfigurationManager {
     var sessionCount: Int {
         get { return defaults.integer(forKey: "atarSessionCount") }
         set { defaults.set(newValue, forKey: "atarSessionCount") }
+    }
+    
+    var notifsEnabled: Bool {
+        get { return defaults.bool(forKey: "atarNotifsEnabled") }
+        set { defaults.set(newValue, forKey: "atarNotifsEnabled") }
     }
 }

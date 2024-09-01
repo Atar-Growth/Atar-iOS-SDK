@@ -41,8 +41,11 @@ public class Atar: NSObject {
         delegateInterceptor = NotificationDelegateLayer(withOriginalDelegate: currentDelegate)
         UNUserNotificationCenter.current().delegate = delegateInterceptor
         
-        // Sync the config
-        ConfigNetworkRequest.shared.sync()
+        NotificationManager.checkNotificationAuthorization { enabled in
+            ConfigurationManager.shared.notifsEnabled = enabled
+            // Sync the config
+            ConfigNetworkRequest.shared.sync()
+        }
         
         // Initialize the lifecyle monintors
         sessionEndMonitor = SessionEndMonitor.shared
@@ -113,6 +116,7 @@ public class Atar: NSObject {
             internalTitlePrefix = ConfigurationManager.shared.triggeredNotifPrefix
         }
         NotificationManager.checkNotificationAuthorization { enabled in
+            ConfigurationManager.shared.notifsEnabled = enabled
             if enabled {
                 DispatchQueue.global(qos: .background).async {
                     NotificationManager.triggerImmediateNotif(request: request, titlePrefix: internalTitlePrefix)

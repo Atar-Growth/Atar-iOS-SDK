@@ -62,10 +62,16 @@ class SessionEndMonitor {
             justClicked = false
             return
         }
-        if ConfigurationManager.shared.sessionCount < 2 {
+        if ConfigurationManager.shared.sessionCount < ConfigurationManager.shared.postSessionNotifMinSessionCount {
             Logger.shared.log("Post session notif not sent. Session count less than 2.")
             return
         }
+        
+        if ConfigurationManager.shared.sessionCount % ConfigurationManager.shared.postSessionNotifSessionInterval != 0 {
+            Logger.shared.log("Post session notif not sent. Session interval not reached.")
+            return
+        }
+        
         if ConfigurationManager.shared.postSessionNotifEnabled == false {
             Logger.shared.log("Post session notif not enabled.")
             return
@@ -91,6 +97,7 @@ class SessionEndMonitor {
     
     private func fireNotification(completion: @escaping (Bool) -> Void) {
         NotificationManager.checkNotificationAuthorization { enabled in
+            ConfigurationManager.shared.notifsEnabled = enabled
             if enabled {
                 DispatchQueue.global(qos: .background).async {
                     NotificationManager.triggerSessionEndNotif(completion: completion)
